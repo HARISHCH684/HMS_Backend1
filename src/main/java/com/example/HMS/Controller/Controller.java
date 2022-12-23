@@ -1,12 +1,18 @@
 package com.example.HMS.Controller;
 
-
+import  java.util.ArrayList;
 import java.util.List;
 
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RestController;
+import com.example.HMS.Repository.PatientDetailsRepository;
+import org.apache.tomcat.jni.User;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.http.HttpStatus;
+import java.util.stream.Stream;
+import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 import com.example.HMS.Entity.Patient;
 import com.example.HMS.Entity.PatientFile;
@@ -20,52 +26,52 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 
 	@RestController
-	@CrossOrigin(origins="*")
+	@CrossOrigin(origins="http://hmsfrontend.s3-website-us-west-2.amazonaws.com/")
 	public class Controller {
 		
 
 			@Autowired
 			PatientFileRepository patientFileRepo;
 
+			@Autowired
+			PatientDetailsRepository patientRepository;
 
-			@GetMapping("/getPatient")
-			public List<PatientFile> getPatientdetails() {
+			static String patientname;
 
-				Patient patient = new Patient();
-				patient.patientId = 1;
-				patient.patientName = "Harish";
-				patient.age = "23";
-				patient.phoneNo = "9999999999";
+			@PostMapping("/PatientIncrement")
+			public ResponseEntity<Patient> PatientIncrement(@RequestBody Patient patient) {
 
-				PatientFile pf = new PatientFile();
-				pf.patientFileId = 1;
-				pf.healthIssue = "fever";
-				pf.prescription = "paracetmol";
-				pf.patient = patient;
-
-
-				PatientFile pf1 = new PatientFile();
-				pf1.patientFileId = 2;
-				pf1.healthIssue = "bp";
-				pf1.prescription = "felodipine";
-				pf1.patient = patient;
-
-
-
-
-				List<PatientFile> list = new ArrayList<>();
-
-				list.add(pf);
-				list.add(pf1);
-
-		        return patientFileRepo.saveAll(list);
-			}
-
-			@GetMapping("patientInfo/{id}")
-			public PatientFile getPatientInfo(@PathVariable int id){
-				return patientFileRepo.findById(id).get();
+				patientname = patient.patientName;
+				return new ResponseEntity<>(this.patientRepository.save(patient), HttpStatus.OK);
 
 			}
+
+			@PostMapping("/PatientFileInfo")
+			public ResponseEntity<PatientFile> addLoanInfo(@RequestBody PatientFile patientFile) {
+	//		@Query("Select p from Patient p where p.patientName = ?1")
+				List<Patient> listpatient = patientRepository.findAll();
+				for (Patient p : listpatient) {
+					String pname = p.patientName;
+					if (pname.equals(patientname)) {
+						patientFile.patient = p;
+					}
+				}
+				return new ResponseEntity<>(this.patientFileRepo.save(patientFile), HttpStatus.OK);
+
+			}
+
+			@GetMapping("/patientDetails")
+			public List<Patient> getPatientDetails() {
+				return patientRepository.findAll();
+			}
+
+			@GetMapping("/patientInfo")
+			public List<PatientFile> getPatientInfo() {
+				return patientFileRepo.findAll();
+			}
+
+
+
 
 		
 	

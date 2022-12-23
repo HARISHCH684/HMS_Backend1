@@ -4,15 +4,13 @@ package com.example.HMS.Entity;
 import org.hibernate.annotations.NotFound;
 import org.hibernate.annotations.NotFoundAction;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.ManyToOne;
+import javax.persistence.*;
 
 @Entity
 public class PatientFile {
 
 	    @Id
+		@GeneratedValue(strategy=GenerationType.IDENTITY)
 	    public int patientFileId;
 
 	    public String healthIssue;
